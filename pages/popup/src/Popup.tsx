@@ -4,6 +4,13 @@ import { PROJECT_URL_OBJECT, useStorage, withErrorBoundary, withSuspense } from 
 import { exampleThemeStorage } from '@extension/storage';
 import { cn, ErrorDisplay, LoadingSpinner, ToggleButton } from '@extension/ui';
 
+// 扩展Window接口以支持zhihuStyleInterval属性
+declare global {
+  interface Window {
+    zhihuStyleInterval?: NodeJS.Timeout | null;
+  }
+}
+
 const notificationOptions = {
   type: 'basic',
   iconUrl: chrome.runtime.getURL('icon-34.png'),
@@ -67,6 +74,12 @@ const Popup = () => {
 
             if (isModified) {
               // 如果已经修改过，恢复原logo
+              // 清除轮询定时器
+              if (window.zhihuStyleInterval) {
+                clearInterval(window.zhihuStyleInterval);
+                window.zhihuStyleInterval = null;
+                console.log('[知乎样式] 已清除轮询定时器');
+              }
               location.reload();
               console.log('[知乎样式] 已恢复原logo');
             } else {
@@ -107,7 +120,7 @@ const Popup = () => {
                 }
               });
 
-              // 修改CSS变量 --GBL01A 的颜色为黑色
+              // 修改CSS变量 --GBL01A 的颜色为黑色，设置Question-mainColumn宽度为100%，并隐藏AnswerItem中的视频和图片
               const style = document.createElement('style');
               style.id = 'zhihu-css-variables';
               style.textContent = `
@@ -116,6 +129,13 @@ const Popup = () => {
                 }
                 * {
                   --GBL01A: #000000 !important;
+                }
+                .Question-mainColumn {
+                  width: 100% !important;
+                }
+                .AnswerItem video,
+                .AnswerItem img {
+                  display: none !important;
                 }
               `;
               document.head.appendChild(style);
@@ -131,7 +151,35 @@ const Popup = () => {
                 }
               });
 
-              console.log('[知乎样式] 已修改为飞书logo、更新标题、修改CSS变量并移除侧边栏内容');
+              // 启动轮询隐藏新加载的视频和图片
+              if (!window.zhihuStyleInterval) {
+                window.zhihuStyleInterval = setInterval(() => {
+                  const answerItems = document.querySelectorAll('.AnswerItem');
+                  answerItems.forEach(answerItem => {
+                    const videos = answerItem.querySelectorAll('video');
+                    const images = answerItem.querySelectorAll('img');
+
+                    videos.forEach(video => {
+                      if (!video.getAttribute('data-zhihu-hidden')) {
+                        video.style.display = 'none';
+                        video.setAttribute('data-zhihu-hidden', 'true');
+                        console.log('[知乎样式] 轮询隐藏视频元素');
+                      }
+                    });
+
+                    images.forEach(image => {
+                      if (!image.getAttribute('data-zhihu-hidden')) {
+                        image.style.display = 'none';
+                        image.setAttribute('data-zhihu-hidden', 'true');
+                        console.log('[知乎样式] 轮询隐藏图片元素');
+                      }
+                    });
+                  });
+                }, 1000);
+                console.log('[知乎样式] 已启动轮询隐藏功能，每秒检查新加载的媒体内容');
+              }
+
+              console.log('[知乎样式] 已修改为飞书logo、更新标题、修改CSS变量、移除侧边栏内容并启动轮询隐藏');
             }
           } else {
             console.log('[知乎样式] 未找到知乎logo元素');
