@@ -13,6 +13,9 @@
   "injectButton": {
     "message": "Click to inject Content Scripts"
   },
+  "modifyZhihuStyle": {
+    "message": "修改知乎样式"
+  },
   "greeting": {
     "description": "Greeting message",
     "message": "Hello, My name is $NAME$",

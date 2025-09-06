@@ -13,6 +13,9 @@
   "injectButton": {
     "message": "콘텐츠 스크립트를 삽입하려면 클릭하세요."
   },
+  "modifyZhihuStyle": {
+    "message": "知乎 스타일 수정"
+  },
   "greeting": {
     "description": "인사 메시지",
     "message": "안녕하세요, 제 이름은 $NAME$입니다.",
