@@ -107,7 +107,31 @@ const Popup = () => {
                 }
               });
 
-              console.log('[知乎样式] 已修改为飞书logo并更新标题');
+              // 修改CSS变量 --GBL01A 的颜色为黑色
+              const style = document.createElement('style');
+              style.id = 'zhihu-css-variables';
+              style.textContent = `
+                :root {
+                  --GBL01A: #000000 !important;
+                }
+                * {
+                  --GBL01A: #000000 !important;
+                }
+              `;
+              document.head.appendChild(style);
+
+              // 移除 Question-sideColumn 和 QuestionHeader-side 元素的内容
+              const sideColumnElements = document.querySelectorAll('.Question-sideColumn, .QuestionHeader-side');
+              sideColumnElements.forEach((element, index) => {
+                // 检查是否已经处理过
+                if (!element.getAttribute('data-content-removed')) {
+                  element.setAttribute('data-content-removed', 'true');
+                  element.innerHTML = '';
+                  console.log('[知乎样式] 已移除第' + (index + 1) + '个侧边栏元素的内容');
+                }
+              });
+
+              console.log('[知乎样式] 已修改为飞书logo、更新标题、修改CSS变量并移除侧边栏内容');
             }
           } else {
             console.log('[知乎样式] 未找到知乎logo元素');
